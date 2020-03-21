@@ -1,0 +1,20 @@
+server:
+  port: 10010
+
+ali:
+  config:
+    regionid: C3bbEZQRCOugEqVAEFtvJi3gpHW+W1UR
+    accesskeyid: /cXWYT90JZXh8AryoWIgb6oxFP6HG3KZvi0R9APHS28=
+    accesssecret: q/Okhjof8+IT4FaBemMYAtTs8hjfIBcji2O5jLoMNKwb5xZAn/zMvw==
+  mobilemsg:
+    signName: sngphVa8UO/2wJOg9JO89Aaf3sAtCzktprAb2r1U8SY=
+    templateCode: eQEzRmiczuokmYNxdYCYwNzM+8qyUgPs
+    timeOut: 5 # 有效期1分钟
+    
+spring:
+  redis:
+    host: 192.168.199.106
+    port: 6380
+    password: 123456
+    timeout: 10000
+  

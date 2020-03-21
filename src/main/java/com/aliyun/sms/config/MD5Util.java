@@ -1,5 +1,9 @@
 package com.aliyun.sms.config;
 
+import org.jasypt.encryption.StringEncryptor;
+import org.jasypt.util.text.BasicTextEncryptor;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.security.MessageDigest;
 import java.util.Iterator;
 import java.util.Map;
@@ -80,7 +84,14 @@ public class MD5Util {
 		  #ali.config.accesssecret=98MiDDWsfhphUrV5N4TIgS9PkHEO62
 		* */
 		String str = MD5Util.MD5Encode("98MiDDWsfhphUrV5N4TIgS9PkHEO62", "utf-8");
-		System.out.println(str);
+		//System.out.println(str);
+
+		BasicTextEncryptor encryptor = new BasicTextEncryptor();
+		encryptor.setPassword("zheng1314");
+		String encrypt = encryptor.encrypt("SMS_186575948");
+		System.out.println("加密："+encrypt);
+		String decrypt = encryptor.decrypt("/cXWYT90JZXh8AryoWIgb6oxFP6HG3KZvi0R9APHS28=");
+		System.out.println("解密："+decrypt);
 	}
 
 }

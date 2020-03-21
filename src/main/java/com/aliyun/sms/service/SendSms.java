@@ -2,10 +2,8 @@ package com.aliyun.sms.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.aliyun.sms.config.AliConfigUtil;
 import com.aliyun.sms.config.CommonResult;
-import com.aliyun.sms.config.DateUtils;
-import com.aliyun.sms.model.AliConfigBean;
-import com.aliyun.sms.model.AliSmsConfig;
 import com.aliyuncs.CommonRequest;
 import com.aliyuncs.CommonResponse;
 import com.aliyuncs.DefaultAcsClient;
@@ -14,6 +12,7 @@ import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.exceptions.ServerException;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.profile.DefaultProfile;
+import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.StringUtils;
@@ -27,7 +26,9 @@ import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import static com.aliyun.sms.config.DateUtils.*;
+import static com.aliyun.sms.config.AliConfigUtil.*;
+import static com.aliyun.sms.config.DateUtils.getBetween;
+import static com.aliyun.sms.config.DateUtils.getMilliss;
 
 /**
  * 阿里发送短信接口实现
@@ -36,23 +37,27 @@ import static com.aliyun.sms.config.DateUtils.*;
 
 @RestController
 public class SendSms {
-
-    @Autowired
-    AliConfigBean aliConfigBean;
     
     @Autowired
     StringRedisTemplate redisTemplate;
+    
+    @Autowired
+    AliConfigUtil aliConfigUtil;
     
     private static final ThreadLocal<String> threadLocal = new ThreadLocal();
     
     @PostMapping("message/sendMsg")
     public CommonResult sendMsg(HttpServletRequest req){
 
-        String regionid = aliConfigBean.getRegionid();
-        String accesskeyid = aliConfigBean.getAccesskeyid();
-        String accesssecret = aliConfigBean.getAccesssecret();
+        BasicTextEncryptor encryptor = new BasicTextEncryptor();
+        encryptor.setPassword("zheng1314");
 
-        DefaultProfile profile = DefaultProfile.getProfile(regionid,accesskeyid,accesssecret);
+        DefaultProfile profile = DefaultProfile.getProfile(
+                encryptor.decrypt(aliConfigUtil.regionid),
+                encryptor.decrypt(aliConfigUtil.accesskeyid),
+                encryptor.decrypt(aliConfigUtil.accesssecret)
+        );
+        
         IAcsClient client = new DefaultAcsClient(profile);
         
         try {
@@ -63,8 +68,8 @@ public class SendSms {
         request.setSysAction("SendSms");
 //        request.putQueryParameter("RegionId", regionid);
         request.putQueryParameter("PhoneNumbers", getPostbody(req));
-        request.putQueryParameter("SignName", AliSmsConfig.SignName);
-        request.putQueryParameter("TemplateCode", AliSmsConfig.TemplateCode);
+        request.putQueryParameter("SignName",encryptor.decrypt(aliConfigUtil.signName));
+        request.putQueryParameter("TemplateCode",encryptor.decrypt(aliConfigUtil.templateCode));
         //将验证码放到全局变量里
         threadLocal.set(getNonce_str());
         request.putQueryParameter("TemplateParam", "{\"code\":"+threadLocal.get()+"}");
@@ -74,8 +79,8 @@ public class SendSms {
             if(!StringUtils.isEmpty(object)) {
                 long timeBe = getBetween(getMilliss(),object.getLongValue("timestamp"));
                 //验证码获取时间不足1min，不去获取验证码
-                if (timeBe < AliSmsConfig.timeOut) {
-                    return new CommonResult().fail();
+                if (timeBe < Long.parseLong(aliConfigUtil.timeOut)) {
+                    return new CommonResult().fail(Long.parseLong(aliConfigUtil.timeOut));
                 }
             }
             CommonResponse response = client.getCommonResponse(request);

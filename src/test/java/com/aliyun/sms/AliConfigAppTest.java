@@ -1,6 +1,6 @@
 package com.aliyun.sms;
 
-import com.aliyun.sms.model.AliConfigBean;
+import com.aliyun.sms.config.AliConfigUtil;
 import com.aliyuncs.CommonRequest;
 import com.aliyuncs.CommonResponse;
 import com.aliyuncs.DefaultAcsClient;
@@ -12,30 +12,30 @@ import com.aliyuncs.profile.DefaultProfile;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
+
+import static com.aliyun.sms.config.AliConfigUtil.*;
 
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class AliConfigAppTest {
-
-    @Autowired
-    AliConfigBean aliConfigBean;
-    
+   
     @Autowired
     StringRedisTemplate redisTemplate;
     
     @Test
     public void test(){
 
-        String regionid = aliConfigBean.getRegionid();
-        String accesskeyid = aliConfigBean.getAccesskeyid();
-        String accesssecret = aliConfigBean.getAccesssecret();
+//        String regionid = aliConfigBean.getRegionid();
+//        String accesskeyid = aliConfigBean.getAccesskeyid();
+//        String accesssecret = aliConfigBean.getAccesssecret();
 
-        DefaultProfile profile = DefaultProfile.getProfile(regionid,accesskeyid,accesssecret);
+
+       /* DefaultProfile profile = DefaultProfile.getProfile(regionid,accesskeyid,accesssecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
         CommonRequest request = new CommonRequest();
@@ -55,11 +55,15 @@ public class AliConfigAppTest {
             e.printStackTrace();
         } catch (ClientException e) {
             e.printStackTrace();
-        }
+        }*/
     }
+    @Autowired
+    AliConfigUtil aliConfigUtil;
 
     @Test
     public void test2(){
         redisTemplate.opsForValue().set("name", "{\"name\":\"zhangsan\"}");
+        System.out.println(new AliConfigUtil().accesskeyid);
+        System.out.println(aliConfigUtil.accesskeyid);
     }
 }

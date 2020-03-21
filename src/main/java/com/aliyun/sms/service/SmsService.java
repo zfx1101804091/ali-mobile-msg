@@ -1,6 +1,5 @@
 package com.aliyun.sms.service;
 
-import com.aliyun.sms.model.AliConfigBean;
 import com.aliyuncs.CommonRequest;
 import com.aliyuncs.CommonResponse;
 import com.aliyuncs.DefaultAcsClient;
@@ -8,7 +7,6 @@ import com.aliyuncs.IAcsClient;
 import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.google.gson.Gson;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,9 +20,6 @@ import java.util.Map;
 @RestController
 public class SmsService {
   
-    @Autowired
-    AliConfigBean aliConfigBean;
-
     /**
      * 发送短信
      */

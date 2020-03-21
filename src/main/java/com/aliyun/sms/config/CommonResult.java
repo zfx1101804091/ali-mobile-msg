@@ -1,10 +1,10 @@
 package com.aliyun.sms.config;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.aliyun.sms.model.AliSmsConfig;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * @description:
@@ -20,7 +20,7 @@ public class CommonResult {
     private String codeNum;
     private Long CodeTime;
     private Object result;
-
+    
 
     public CommonResult(int status, String codeNum, Long codeTime, Object result) {
         this.status = status;
@@ -37,7 +37,7 @@ public class CommonResult {
         return this;
     }
 
-    public CommonResult fail() {
+    public CommonResult fail(long timOut) {
         this.status=405;
         this.codeNum = "";
         this.CodeTime = DateUtils.getMilliss();
@@ -45,7 +45,7 @@ public class CommonResult {
         * {"Message":"OK","RequestId":"00055DF3-1773-43EB-8FF1-989707DD8FA4","BizId":"787821084781582242^0","Code":"OK"}
         * */
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("Message","申请短信验证码不足"+ AliSmsConfig.timeOut +"分钟");
+        jsonObject.put("Message","申请短信验证码不足"+timOut+"分钟");
         jsonObject.put("Code","fail");
         this.result = jsonObject;
         return this;
