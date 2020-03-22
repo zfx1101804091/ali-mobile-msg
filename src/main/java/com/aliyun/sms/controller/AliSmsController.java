@@ -19,6 +19,14 @@ public class AliSmsController {
     @Autowired
     AliSmsService aliSmsService;
 
+    /*
+     * 功能描述: 
+     *  TODO 发送短信验证码
+     * @Param: [req]
+     * @Return: com.aliyun.sms.config.CommonResult
+     * @Author: Administrator
+     * @Date: 2020/3/22 0022 19:25
+     */
     @PostMapping("/sendMsg")
     public CommonResult sendMsg(HttpServletRequest req){
         
