@@ -1,9 +1,10 @@
-package com.aliyun.sms.service;
+package com.aliyun.sms.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyun.sms.config.AliConfigUtil;
 import com.aliyun.sms.config.CommonResult;
+import com.aliyun.sms.service.AliSmsService;
 import com.aliyuncs.CommonRequest;
 import com.aliyuncs.CommonResponse;
 import com.aliyuncs.DefaultAcsClient;
@@ -12,12 +13,12 @@ import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.exceptions.ServerException;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.profile.DefaultProfile;
+import lombok.extern.slf4j.Slf4j;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
@@ -33,9 +34,9 @@ import static com.aliyun.sms.config.DateUtils.getMilliss;
  * 阿里发送短信接口实现
  * 
  */
-
-@RestController
-public class SendSms {
+@Slf4j
+@Service
+public class AliSmsServiceImpl implements AliSmsService {
     
     @Autowired
     StringRedisTemplate redisTemplate;
@@ -45,7 +46,7 @@ public class SendSms {
     
     private static final ThreadLocal<String> threadLocal = new ThreadLocal();
     
-    @PostMapping("/sendMsg")
+    @Override
     public CommonResult sendMsg(HttpServletRequest req){
 
         BasicTextEncryptor encryptor = new BasicTextEncryptor();
@@ -80,34 +81,42 @@ public class SendSms {
             //发送验证码和验证码有效期
             request.putQueryParameter("TemplateParam", getJsonString());
     
-                String str = redisTemplate.opsForValue().get("msg-code");
+                String str = redisTemplate.opsForValue().get("msg:"+phone+":code");
                 JSONObject object = JSON.parseObject(str);
                 if(!StringUtils.isEmpty(object)) {
                     long timeBe = getBetween(getMilliss(),object.getLongValue("timestamp"));
-                    //验证码获取时间不足1min，不去获取验证码
+                    //验证码获取时间不足5min，不去获取验证码
                     if (timeBe < Long.parseLong(timeOut)) {
+                        log.info("验证码获取时间不足{}min，不去重复获取验证码",timeOut);
                         return new CommonResult().fail(Long.parseLong(timeOut));
                     }
                 }
+
+                log.info("手机号为：{}用户，开始申请验证码！",phone);
                 CommonResponse response = client.getCommonResponse(request);
     //            System.out.println(response.getData());
                 JSONObject jsonObject = JSON.parseObject(response.getData());
                 //判断验证码是否发送成功
                 if("OK".equals(jsonObject.get("Code"))){
+                    log.info("手机号为：{}用户，申请验证码成功！开始存入redis",phone);
                     //说明验证码发送成功了 存redis
                     redisTemplate.opsForValue().
-                            set("msg-code", 
+                            set("msg:"+phone+":code", 
                                     "{\"code\":"+threadLocal.get()+",\"timestamp\":"+ getMilliss()+"}");
     
-                    System.out.println("hahah"+redisTemplate.opsForValue().get("msg-code"));
+                    log.info("获取redis中手机号为{}：的验证码是：{}",phone,redisTemplate.opsForValue().get("msg:"+phone+":code"));
                 }
+                log.error("手机号为：{}用户，申请验证码异常！异常原因为：{}",phone,jsonObject.get("Message"));
                 return new CommonResult().ok(threadLocal.get(), getMilliss(),jsonObject); 
             } catch (ServerException e) {
                 e.printStackTrace();
+                log.error("ServerException异常详情：{}",e.getMessage());
             } catch (ClientException e) {
                 e.printStackTrace();
+            log.error("ClientException异常详情：{}",e.getMessage());
             }catch (IOException e){
                 e.printStackTrace();
+            log.error("IOException异常详情：{}",e.getMessage());
             }
             return null;
     }

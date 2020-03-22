@@ -13,11 +13,15 @@ ali:
     effectiveTime: 5 # 有效期5分钟
     
 spring:
+  application:
+    name: sms-server
   redis:
     host: 192.168.199.106
     port: 6380
     password: 123456
     timeout: 10000
-    
 
-  
+logging:
+  config: classpath:log4j2.xml
+
+

@@ -2,6 +2,8 @@ package com.aliyun.sms;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * @description:
@@ -12,7 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class AliConfigApp {
 
     public static void main(String[] args) {
-        
         SpringApplication.run(AliConfigApp.class,args);
     }
+
 }
