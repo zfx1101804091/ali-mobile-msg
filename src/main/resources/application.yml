@@ -1,6 +1,7 @@
 server:
-  port: 10010
-
+  port: 56085
+  servlet:
+    context‐path: /sailing
 ali:
   config:
     regionid: C3bbEZQRCOugEqVAEFtvJi3gpHW+W1UR
@@ -8,8 +9,8 @@ ali:
     accesssecret: q/Okhjof8+IT4FaBemMYAtTs8hjfIBcji2O5jLoMNKwb5xZAn/zMvw==
   mobilemsg:
     signName: sngphVa8UO/2wJOg9JO89Aaf3sAtCzktprAb2r1U8SY=
-    templateCode: eQEzRmiczuokmYNxdYCYwNzM+8qyUgPs
-    timeOut: 5 # 有效期1分钟
+    templateCode: cpl+URAm3kq8MoLDU7qpSc/8IpAtnCO1
+    effectiveTime: 5 # 有效期5分钟
     
 spring:
   redis:
@@ -17,4 +18,6 @@ spring:
     port: 6380
     password: 123456
     timeout: 10000
+    
+
   

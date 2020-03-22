@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import static com.aliyun.sms.config.AliConfigUtil.*;
 import static com.aliyun.sms.config.DateUtils.getBetween;
 import static com.aliyun.sms.config.DateUtils.getMilliss;
 
@@ -46,7 +45,7 @@ public class SendSms {
     
     private static final ThreadLocal<String> threadLocal = new ThreadLocal();
     
-    @PostMapping("message/sendMsg")
+    @PostMapping("/sendMsg")
     public CommonResult sendMsg(HttpServletRequest req){
 
         BasicTextEncryptor encryptor = new BasicTextEncryptor();
@@ -59,56 +58,64 @@ public class SendSms {
         );
         
         IAcsClient client = new DefaultAcsClient(profile);
-        
+
+
         try {
-        CommonRequest request = new CommonRequest();
-        request.setSysMethod(MethodType.POST);
-        request.setSysDomain("dysmsapi.aliyuncs.com");
-        request.setSysVersion("2017-05-25");
-        request.setSysAction("SendSms");
-//        request.putQueryParameter("RegionId", regionid);
-        request.putQueryParameter("PhoneNumbers", getPostbody(req));
-        request.putQueryParameter("SignName",encryptor.decrypt(aliConfigUtil.signName));
-        request.putQueryParameter("TemplateCode",encryptor.decrypt(aliConfigUtil.templateCode));
-        //将验证码放到全局变量里
-        threadLocal.set(getNonce_str());
-        request.putQueryParameter("TemplateParam", "{\"code\":"+threadLocal.get()+"}");
 
-            String str = redisTemplate.opsForValue().get("msg-code");
-            JSONObject object = JSON.parseObject(str);
-            if(!StringUtils.isEmpty(object)) {
-                long timeBe = getBetween(getMilliss(),object.getLongValue("timestamp"));
-                //验证码获取时间不足1min，不去获取验证码
-                if (timeBe < Long.parseLong(aliConfigUtil.timeOut)) {
-                    return new CommonResult().fail(Long.parseLong(aliConfigUtil.timeOut));
+            JSONObject postbody = JSON.parseObject(getPostbody(req));
+            String timeOut = postbody.getString("effectiveTime");//验证码过期时间
+            String phone = postbody.getString("phone");//手机号
+
+            CommonRequest request = new CommonRequest();
+            request.setSysMethod(MethodType.POST);
+            request.setSysDomain("dysmsapi.aliyuncs.com");
+            request.setSysVersion("2017-05-25");
+            request.setSysAction("SendSms");
+    //        request.putQueryParameter("RegionId", regionid);
+            request.putQueryParameter("PhoneNumbers", phone);
+            request.putQueryParameter("SignName",encryptor.decrypt(aliConfigUtil.signName));
+            request.putQueryParameter("TemplateCode",encryptor.decrypt(aliConfigUtil.templateCode));
+            //将验证码放到全局变量里
+            threadLocal.set(getNonce_str());
+            //发送验证码和验证码有效期
+            request.putQueryParameter("TemplateParam", getJsonString());
+    
+                String str = redisTemplate.opsForValue().get("msg-code");
+                JSONObject object = JSON.parseObject(str);
+                if(!StringUtils.isEmpty(object)) {
+                    long timeBe = getBetween(getMilliss(),object.getLongValue("timestamp"));
+                    //验证码获取时间不足1min，不去获取验证码
+                    if (timeBe < Long.parseLong(timeOut)) {
+                        return new CommonResult().fail(Long.parseLong(timeOut));
+                    }
                 }
+                CommonResponse response = client.getCommonResponse(request);
+    //            System.out.println(response.getData());
+                JSONObject jsonObject = JSON.parseObject(response.getData());
+                //判断验证码是否发送成功
+                if("OK".equals(jsonObject.get("Code"))){
+                    //说明验证码发送成功了 存redis
+                    redisTemplate.opsForValue().
+                            set("msg-code", 
+                                    "{\"code\":"+threadLocal.get()+",\"timestamp\":"+ getMilliss()+"}");
+    
+                    System.out.println("hahah"+redisTemplate.opsForValue().get("msg-code"));
+                }
+                return new CommonResult().ok(threadLocal.get(), getMilliss(),jsonObject); 
+            } catch (ServerException e) {
+                e.printStackTrace();
+            } catch (ClientException e) {
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
             }
-            CommonResponse response = client.getCommonResponse(request);
-//            System.out.println(response.getData());
-            JSONObject jsonObject = JSON.parseObject(response.getData());
-            //判断验证码是否发送成功
-            if("OK".equals(jsonObject.get("Code"))){
-                //说明验证码发送成功了 存redis
-                redisTemplate.opsForValue().
-                        set("msg-code", 
-                                "{\"code\":"+threadLocal.get()+",\"timestamp\":"+ getMilliss()+"}");
-
-                System.out.println("hahah"+redisTemplate.opsForValue().get("msg-code"));
-            }
-            return new CommonResult().ok(threadLocal.get(), getMilliss(),jsonObject); 
-        } catch (ServerException e) {
-            e.printStackTrace();
-        } catch (ClientException e) {
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-        return null;
+            return null;
     }
 
 
     /**
      * 获取post请求体body数据
+     *  condition 条件
      * @return
      */
     public static String getPostbody(HttpServletRequest request) throws IOException {
@@ -120,9 +127,10 @@ public class SendSms {
             wholeStr += str;
         }
         JSONObject t=JSON.parseObject(wholeStr);//转化成json对象
-        String phone = (String) t.get("phone");//得到想要的参数
-        return phone;
-
+        String phone = (String) t.get("phone");//得到手机号
+        String effectiveTime = (String) t.get("effectiveTime");//得到验证码有效期时间
+       
+        return "{\"phone\":"+phone+",\"effectiveTime\":"+effectiveTime+"}";
     }
     
     
@@ -148,4 +156,12 @@ public class SendSms {
         return new String(nonceChars);
     }
 
+    //解决阿里短信接口第一位为 0 时 ，在手机上不显示0的问题  必须使用标准json格式
+    public static String getJsonString(){
+        //{\"code\":"+threadLocal.get()+"}
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code",threadLocal.get());
+//        jsonObject.put("code","001234");
+        return JSONObject.toJSONString(jsonObject);
+    }
 }

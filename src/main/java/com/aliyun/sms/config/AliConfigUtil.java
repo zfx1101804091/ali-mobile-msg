@@ -26,7 +26,7 @@ public class AliConfigUtil {
     @Value("${ali.mobilemsg.templateCode}")
     public String templateCode;
 
-    @Value("${ali.mobilemsg.timeOut}")
+    @Value("${ali.mobilemsg.effectiveTime}")
     public String timeOut;
     
 }

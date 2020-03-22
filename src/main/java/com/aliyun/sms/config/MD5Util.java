@@ -88,9 +88,9 @@ public class MD5Util {
 
 		BasicTextEncryptor encryptor = new BasicTextEncryptor();
 		encryptor.setPassword("zheng1314");
-		String encrypt = encryptor.encrypt("SMS_186575948");
+		String encrypt = encryptor.encrypt("SMS_186611238");
 		System.out.println("加密："+encrypt);
-		String decrypt = encryptor.decrypt("/cXWYT90JZXh8AryoWIgb6oxFP6HG3KZvi0R9APHS28=");
+		String decrypt = encryptor.decrypt("cpl+URAm3kq8MoLDU7qpSc/8IpAtnCO1");
 		System.out.println("解密："+decrypt);
 	}
 

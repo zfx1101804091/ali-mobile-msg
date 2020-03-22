@@ -37,7 +37,7 @@ public class CommonResult {
         return this;
     }
 
-    public CommonResult fail(long timOut) {
+    public CommonResult fail(long timeOut) {
         this.status=405;
         this.codeNum = "";
         this.CodeTime = DateUtils.getMilliss();
@@ -45,7 +45,7 @@ public class CommonResult {
         * {"Message":"OK","RequestId":"00055DF3-1773-43EB-8FF1-989707DD8FA4","BizId":"787821084781582242^0","Code":"OK"}
         * */
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("Message","申请短信验证码不足"+timOut+"分钟");
+        jsonObject.put("Message","申请短信验证码不足"+timeOut+"分钟");
         jsonObject.put("Code","fail");
         this.result = jsonObject;
         return this;

@@ -50,7 +50,7 @@ public class SmsService {
         // 模板名称，长度为1~30个字符
         addSmsTemplateRequest.putQueryParameter("TemplateName", "测试短信模板");
         // 模板内容，长度为1~500个字符
-        addSmsTemplateRequest.putQueryParameter("TemplateContent", "您正在申请手机注册，验证码为：${code}，5分钟内有效！");
+        addSmsTemplateRequest.putQueryParameter("TemplateContent", "您正在申请手机注册，验证码为：${code}分钟内有效！");
         // 短信模板申请说明
         addSmsTemplateRequest.putQueryParameter("Remark", "测试");
         CommonResponse addSmsTemplateResponse = client.getCommonResponse(addSmsTemplateRequest);
