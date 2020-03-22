@@ -88,7 +88,7 @@ public class AliSmsServiceImpl implements AliSmsService {
                     //验证码获取时间不足5min，不去获取验证码
                     if (timeBe < Long.parseLong(timeOut)) {
                         log.info("验证码获取时间不足{}min，不去重复获取验证码",timeOut);
-                        return new CommonResult().fail(Long.parseLong(timeOut));
+                        return new CommonResult().timeOut(Long.parseLong(timeOut));
                     }
                 }
 
@@ -108,7 +108,7 @@ public class AliSmsServiceImpl implements AliSmsService {
                     return new CommonResult().ok(threadLocal.get(), getMilliss(),jsonObject);
                 }else{
                     log.error("手机号为：{}用户，申请验证码异常！异常原因为：{}",phone,jsonObject.get("Message"));
-                    return new CommonResult().fail(Long.parseLong(timeOut));
+                    return new CommonResult().error(jsonObject);
                 }
             
             } catch (ServerException e) {
