@@ -105,9 +105,12 @@ public class AliSmsServiceImpl implements AliSmsService {
                                     "{\"code\":"+threadLocal.get()+",\"timestamp\":"+ getMilliss()+"}");
     
                     log.info("获取redis中手机号为{}：的验证码是：{}",phone,redisTemplate.opsForValue().get("msg:"+phone+":code"));
+                    return new CommonResult().ok(threadLocal.get(), getMilliss(),jsonObject);
+                }else{
+                    log.error("手机号为：{}用户，申请验证码异常！异常原因为：{}",phone,jsonObject.get("Message"));
+                    return new CommonResult().fail(Long.parseLong(timeOut));
                 }
-                log.error("手机号为：{}用户，申请验证码异常！异常原因为：{}",phone,jsonObject.get("Message"));
-                return new CommonResult().ok(threadLocal.get(), getMilliss(),jsonObject); 
+            
             } catch (ServerException e) {
                 e.printStackTrace();
                 log.error("ServerException异常详情：{}",e.getMessage());
