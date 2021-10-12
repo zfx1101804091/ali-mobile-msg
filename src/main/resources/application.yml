@@ -4,12 +4,12 @@ server:
     context‐path: /sailing
 ali:
   config:
-    regionid: C3bbEZQRCOugEqVAEFtvJi3gpHW+W1UR
-    accesskeyid: /cXWYT90JZXh8AryoWIgb6oxFP6HG3KZvi0R9APHS28=
-    accesssecret: q/Okhjof8+IT4FaBemMYAtTs8hjfIBcji2O5jLoMNKwb5xZAn/zMvw==
+    regionid: 
+    accesskeyid: 
+    accesssecret: 
   mobilemsg:
-    signName: sngphVa8UO/2wJOg9JO89Aaf3sAtCzktprAb2r1U8SY=
-    templateCode: cpl+URAm3kq8MoLDU7qpSc/8IpAtnCO1
+    signName: 
+    templateCode: 
     effectiveTime: 5 # 有效期5分钟
     
 spring:
